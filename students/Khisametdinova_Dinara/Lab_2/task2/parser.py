@@ -1,4 +1,5 @@
-import requests
+import aiohttp
+import asyncio
 from bs4 import BeautifulSoup
 import psycopg2
 
@@ -10,35 +11,39 @@ DB_PARAMS = {
     "port": "5433"
 }
 
-def parse_and_save(url, table_name="specializations"):
+async def parse_and_save_async(session, url, table_name="specializations_async"):
     try:
-        response = requests.get(url, timeout=10)
-        response.raise_for_status()
+        async with session.get(url, timeout=10) as response:
+            if response.status != 200:
+                print(f"Failed to fetch {url} with status {response.status}")
+                return
 
-        soup = BeautifulSoup(response.text, 'html.parser')
+            text = await response.text()
 
-        title_tag = soup.find('h1', id="firstHeading")
-        name = title_tag.get_text(strip=True) if title_tag else "No Title"
+            soup = BeautifulSoup(text, 'html.parser')
 
-        first_paragraph = soup.find('p')
-        description = first_paragraph.get_text(strip=True) if first_paragraph else "No description."
+            title_tag = soup.find('h1')
+            name = title_tag.get_text(strip=True) if title_tag else 'No Title'
 
-        conn = psycopg2.connect(**DB_PARAMS)
-        cursor = conn.cursor()
+            description_tag = soup.find('p')
+            description = description_tag.get_text(strip=True) if description_tag else 'No Description'
 
-        cursor.execute(
-            f'''
-            INSERT INTO {table_name} (name, description)
-            VALUES (%s, %s)
-            ''',
-            (name, description)
-        )
+            conn = psycopg2.connect(**DB_PARAMS)
+            cursor = conn.cursor()
 
-        conn.commit()
-        cursor.close()
-        conn.close()
+            cursor.execute(
+                f'''
+                INSERT INTO {table_name} (name, description)
+                VALUES (%s, %s)
+                ''',
+                (name, description)
+            )
 
-        print(f"Saved {url} to {table_name} with name: {name}")
+            conn.commit()
+            cursor.close()
+            conn.close()
+
+            print(f"Saved {name} from {url}")
 
     except Exception as e:
         print(f"Error processing {url}: {e}")

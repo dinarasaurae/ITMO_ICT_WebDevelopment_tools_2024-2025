@@ -1,7 +1,6 @@
 import threading
 import time
 
-# Функция для подсчета суммы на подотрезке
 def partial_sum(start, end, result, index):
     n = end - start + 1
     result[index] = (start + end) * n // 2

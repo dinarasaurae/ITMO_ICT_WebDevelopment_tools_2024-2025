@@ -11,7 +11,7 @@ def main():
 
     start_time = time.time()
 
-    with multiprocessing.Pool() as pool:
+    with multiprocessing.Pool(processes=multiprocessing.cpu_count()) as pool:
         pool.map(process_url, urls)
 
     end_time = time.time()
@@ -19,5 +19,5 @@ def main():
     print(f"Multiprocessing finished in {end_time - start_time:.2f} seconds.")
 
 if __name__ == "__main__":
-    multiprocessing.set_start_method("spawn")
+    multiprocessing.set_start_method('spawn')
     main()
