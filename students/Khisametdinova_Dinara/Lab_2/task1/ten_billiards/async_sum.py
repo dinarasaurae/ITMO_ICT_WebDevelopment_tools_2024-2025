@@ -1,32 +1,26 @@
 import asyncio
 import time
-from concurrent.futures import ThreadPoolExecutor
 
-def partial_sum(start, end):
-    n = end - start + 1
-    return (start + end) * n // 2
+async def segment_sum(start, end):
+    count = end - start + 1
+    return (start + end) * count // 2
 
-async def calculate_sum():
-    total_start = 1
-    total_end = 10_000_000_000_000
-    num_tasks = 8
-    step = (total_end - total_start + 1) // num_tasks
+async def async_arithmetic_sum(total=10_000_000_000, parts=8):
+    start_time = time.time()
+    chunk = total // parts
 
-    loop = asyncio.get_running_loop()
-    results = []
-    with ThreadPoolExecutor() as executor:
-        tasks = []
-        for i in range(num_tasks):
-            start = total_start + i * step
-            end = start + step - 1 if i != num_tasks - 1 else total_end
-            tasks.append(loop.run_in_executor(executor, partial_sum, start, end))
-        results = await asyncio.gather(*tasks)
+    tasks = []
+    for i in range(parts):
+        seg_start = i * chunk + 1
+        seg_end = (i + 1) * chunk if i < parts - 1 else total
+        tasks.append(segment_sum(seg_start, seg_end))
 
-    return sum(results)
+    results = await asyncio.gather(*tasks)
+    final_sum = sum(results)
+    end_time = time.time()
+
+    print(f"Sum: {final_sum}")
+    print(f"Time: {end_time - start_time:.2f} seconds")
 
 if __name__ == "__main__":
-    start_time = time.time()
-    total = asyncio.run(calculate_sum())
-    end_time = time.time()
-    print(f"sum: {total}")
-    print(f"time: {end_time - start_time:.2f} seconds")
+    asyncio.run(async_arithmetic_sum())

@@ -20,7 +20,7 @@ def collect_urls():
             full_url = BASE_URL + href
             urls.append(full_url)
 
-    urls = list(set(urls))  # Убираем дубликаты
+    urls = list(set(urls))  
 
     with open('specialization_urls.txt', 'w', encoding='utf-8') as f:
         for url in urls:

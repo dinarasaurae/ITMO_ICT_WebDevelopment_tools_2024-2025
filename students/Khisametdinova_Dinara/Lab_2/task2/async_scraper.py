@@ -12,7 +12,7 @@ DB_PARAMS = {
     "port": "5433"
 }
 
-SEM = asyncio.Semaphore(10)  # Ограничение количества одновременных запросов
+SEM = asyncio.Semaphore(10)  
 
 async def parse_and_save(session, url, table_name="specializations_async"):
     async with SEM:  # не больше 10 запросов одновременно
@@ -46,7 +46,7 @@ async def parse_and_save(session, url, table_name="specializations_async"):
 
                 print(f"Saved {name} from {url}")
 
-                await asyncio.sleep(0.1)  # Небольшая пауза
+                await asyncio.sleep(0.1) 
 
         except Exception as e:
             print(f"Error processing {url}: {e}")
